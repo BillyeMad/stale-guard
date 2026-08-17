@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stale-guard"
+version = "0.1.0"
+description = "Tell whether your data is fresh, not merely rewritten."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+stale-guard = "stale_guard.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stale_guard"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
