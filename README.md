@@ -14,6 +14,9 @@ between them is where sources go quietly dead.
 
 ---
 
+> **The full write-up, with the numbers and the replay:
+> [The 47-hour freeze](docs/the-47-hour-freeze.md).**
+
 ## Two incidents this was built from
 
 Both are from a production odds-scraping pipeline. In both, every existing
