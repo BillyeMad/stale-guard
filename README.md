@@ -131,6 +131,12 @@ before you started watching. `stale-guard` reports `BLIND` and exits 2 rather
 than reporting OK. An OK there would be a guess wearing the costume of a
 measurement.
 
+**An unconfirmed age is a lower bound, and says so.** If the guard is
+deployed in the middle of a freeze, `first_seen` records when *you started
+looking*, not when the content appeared. Until a real change is observed, the
+layer is marked `provisional` and the report reads "last changed **at least**
+3.0 h ago". The hedge disappears the moment a change is seen.
+
 **Blind is not broken either.** If a payload timestamp cannot be parsed, the
 report says exactly that, quoting the exception. It never converts a swallowed
 error into a confident claim about the source. Those are two different repair

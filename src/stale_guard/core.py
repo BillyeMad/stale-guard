@@ -54,6 +54,15 @@ class LayerResult:
     status: Status
     age: timedelta | None
     detail: str
+    provisional: bool = False
+    """True when `age` is a LOWER BOUND, not a measurement.
+
+    Until we have watched the content actually change once, all we know is
+    how long it has been identical *since we started looking*. If the guard
+    was deployed in the middle of a freeze, the real age is larger. Saying
+    "3 h" there would overstate what we measured, so the report says
+    "at least 3 h" and keeps saying it until a change is observed.
+    """
 
 
 @dataclass(frozen=True)
@@ -165,14 +174,19 @@ def _human(delta: timedelta) -> str:
 
 
 def _age_layer(
-    name: str, age: timedelta, limit: timedelta | None, note: str
+    name: str, age: timedelta, limit: timedelta | None, note: str,
+    provisional: bool = False,
 ) -> LayerResult:
+    at_least = "at least " if provisional else ""
     if limit is not None and age > limit:
         return LayerResult(
             name, Status.STALE, age,
-            f"{note} {_human(age)} ago (limit {_human(limit)})",
+            f"{note} {at_least}{_human(age)} ago (limit {_human(limit)})",
+            provisional,
         )
-    return LayerResult(name, Status.OK, age, f"{note} {_human(age)} ago")
+    return LayerResult(
+        name, Status.OK, age, f"{note} {at_least}{_human(age)} ago", provisional
+    )
 
 
 def _content_layer(src: Source, target: Path, now: datetime) -> LayerResult:
@@ -201,11 +215,21 @@ def _content_layer(src: Source, target: Path, now: datetime) -> LayerResult:
     if previous is not None and previous.get("digest") == digest:
         first_seen = datetime.fromisoformat(previous["first_seen"])
         age = now - first_seen
-        return _age_layer("content", age, src.max_content_age, "last changed")
+        # `confirmed` means: we have seen this content REPLACE something else,
+        # so `first_seen` is the real moment it appeared. Without that, the
+        # age is only a lower bound -- we may have started watching mid-freeze.
+        return _age_layer(
+            "content", age, src.max_content_age, "last changed",
+            provisional=not previous.get("confirmed", False),
+        )
 
     store.parent.mkdir(parents=True, exist_ok=True)
     store.write_text(
-        json.dumps({"digest": digest, "first_seen": now.isoformat()}),
+        json.dumps({
+            "digest": digest,
+            "first_seen": now.isoformat(),
+            "confirmed": previous is not None,
+        }),
         encoding="utf-8",
     )
 

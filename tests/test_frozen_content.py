@@ -235,3 +235,30 @@ def test_payload_lag_is_reported_even_when_everything_is_fresh(tmp_path):
     assert report.status is Status.OK
     lag = report.layer("payload").age - report.layer("write").age
     assert timedelta(minutes=19) <= lag <= timedelta(minutes=20)
+
+
+def test_age_is_a_lower_bound_until_a_change_is_observed(tmp_path):
+    """Deployed mid-freeze, the guard must not overstate what it measured.
+
+    Until we have watched the content actually change once, `first_seen` is
+    only "when we started looking", not "when it appeared".
+    """
+    src = _source(tmp_path)
+    frozen = {"odds": [1.85]}
+
+    _write(src.path, frozen, mtime=T0)
+    check(src, now=T0)                       # baseline, blind
+
+    report = check(src, now=T0 + 2 * HOUR)
+    content = report.layer("content")
+    assert content.provisional is True
+    assert "at least" in content.detail
+
+    # Once we see a real change, the clock is ours and the hedge drops.
+    _write(src.path, {"odds": [1.90]}, mtime=T0 + 3 * HOUR)
+    check(src, now=T0 + 3 * HOUR)
+    report = check(src, now=T0 + 4 * HOUR)
+    content = report.layer("content")
+    assert content.provisional is False
+    assert "at least" not in content.detail
+    assert content.age == HOUR
