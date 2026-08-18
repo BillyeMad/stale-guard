@@ -262,3 +262,27 @@ def test_age_is_a_lower_bound_until_a_change_is_observed(tmp_path):
     assert content.provisional is False
     assert "at least" not in content.detail
     assert content.age == HOUR
+
+
+def test_a_backup_directory_gains_directories_not_files(tmp_path):
+    """A backup store grows by one *directory* per run.
+
+    With the default `members="files"` such a store looks empty, and the guard
+    reports MISSING -- a true statement about files, a false one about the
+    backup it is supposed to watch. Naming what counts as a member is the fix.
+    """
+    store = tmp_path / "backups"
+    store.mkdir()
+    snap = store / "2026-08-18_14-00-00"
+    snap.mkdir()
+    (snap / "payload").write_text("x")
+    os.utime(snap, (T0.timestamp(), T0.timestamp()))
+
+    files_only = Source(name="b", newest_in=(store, "20*-*"),
+                        max_write_age=6 * HOUR, state_dir=tmp_path / "s")
+    assert check(files_only, now=T0 + HOUR).status is Status.MISSING
+
+    dirs = Source(name="b", newest_in=(store, "20*-*"), members="dirs",
+                  max_write_age=6 * HOUR, state_dir=tmp_path / "s2")
+    assert check(dirs, now=T0 + HOUR).status is Status.OK
+    assert check(dirs, now=T0 + timedelta(days=2)).status is Status.STALE

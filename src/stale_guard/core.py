@@ -123,6 +123,14 @@ class Source:
     name: str
     path: Path | None = None
     newest_in: tuple[Path, str] | None = None
+    members: str = "files"
+    """What counts as a member of `newest_in`: "files", "dirs" or "any".
+
+    A backup directory gains *directories*, not files -- one per snapshot. With
+    the default "files" such a directory looks empty and the guard reports
+    MISSING, which is a true statement about files and a false one about the
+    backup. Say what you are watching.
+    """
     max_write_age: timedelta | None = None
     max_content_age: timedelta | None = None
     payload_timestamp: Callable[[bytes], datetime] | None = None
@@ -132,6 +140,8 @@ class Source:
     def __post_init__(self) -> None:
         if (self.path is None) == (self.newest_in is None):
             raise ValueError("give exactly one of `path` or `newest_in`")
+        if self.members not in ("files", "dirs", "any"):
+            raise ValueError('members must be "files", "dirs" or "any"')
         if self.payload_timestamp is not None and self.max_payload_age is None:
             raise ValueError("payload_timestamp needs max_payload_age")
 
@@ -155,7 +165,10 @@ def _resolve(src: Source) -> tuple[Path | None, str]:
     directory, pattern = src.newest_in  # type: ignore[misc]
     if not directory.exists():
         return None, f"the directory does not exist: {directory}"
-    members = [p for p in directory.glob(pattern) if p.is_file()]
+    keep = {"files": lambda p: p.is_file(),
+            "dirs": lambda p: p.is_dir(),
+            "any": lambda p: True}[src.members]
+    members = [p for p in directory.glob(pattern) if keep(p)]
     if not members:
         return None, (
             f"no file matches {pattern!r} in {directory} -- "
