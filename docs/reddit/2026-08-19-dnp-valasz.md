@@ -38,16 +38,27 @@ Ez pontosan az ő „a hívási helyek véletlenül átadják" alakzata.
 
 ---
 
-## ⚠️ ÁLLAPOT: MEGÍRVA, DE NEM MENT KI (2026-08-19)
+## ✅ KIPOSZTOLVA — 2026-08-19, BillyeMad85
 
-Három próbálkozás az old.reddit felületen, mindhárom **`an error occurred
-(status: 404)`** — friss oldalbetöltésből is. A fiókon ellenőrizve: **egyetlen
-hozzászólás van**, a 19 órás eredeti; **semmi nem posztolódott duplán**.
+## 🔴 Az old.reddit válasz-végpontja NEM MŰKÖDIK
 
-Az eredeti hozzászólás ugyanezen a felületen, ugyanezzel a fiókkal 19 órája
-gond nélkül kiment — tehát nem tiltás és nem a fiók.
+**Négy próbálkozás**, mind `an error occurred (status: 404)` — friss
+oldalbetöltésből és friss bejelentkezés után is. A fiókon ellenőrizve közben:
+**nem posztolódott semmi duplán**.
 
-## A szöveg (kiposztolásra vár)
+Fontos, hogy ez NEM tiltás és NEM a fiók: az ELSŐ hozzászólás (08-18) ugyanezen
+a felületen, ugyanezzel a fiókkal gond nélkül kiment. Valami a `old.reddit`
+válasz-végpontján romlott el a két nap között.
+
+**Ami működött: az ÚJ felület** (`www.reddit.com`) — elsőre, hibátlanul.
+
+⚠️ **Az új felületen egy óvintézkedés kell.** 08-18-án ott a gépelésem
+billentyűparancsot váltott ki, mert a kattintás nem fókuszálta a mezőt, és a
+lap átugrott a POSZT-ÍRÁS oldalára. A bevált eljárás: kattintás → **képernyőkép
+a fókusz igazolására** → az első bekezdés begépelése → **újabb képernyőkép,
+hogy tényleg a mezőben van** → csak utána a többi és a küldés.
+
+## A kiposztolt szöveg
 
 Correction accepted — I inferred that from the general shape rather than from
 your code, which is the move I was warning about. Fair.
